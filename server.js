@@ -6,6 +6,13 @@ const mongoose = require("mongoose");
 const helmet = require("helmet");
 const csrf = require("csurf");
 
+//built in modules
+const cluster = require("cluster");
+const os = require("os");
+
+//get number of cpus
+const numCpu = os.cpus().length;
+
 require("dotenv").config();
 
 const app = express();
@@ -41,7 +48,7 @@ mongoose.connect(process.env.URI);
 
 //on connection
 mongoose.connection.on("connected", () => {
-  console.log("connected");
+  // console.log("connected");
 });
 
 //on error
@@ -74,6 +81,22 @@ app.use(function (err, req, res, next) {
     .json({ status: false, message: "Syntax Error!" });
 });
 
-app.listen(8080, () => {
-  console.log("Port: " + 8080);
-});
+//if the cluster is master
+if (cluster.isMaster) {
+  for (let i = 0; i < numCpu; i++) {
+    cluster.fork();
+  }
+
+  //if worker dies or is killed
+  cluster.on("exit", (worker, code, signal) => {
+    cluster.fork();
+  });
+} else {
+  app.listen(8080, () => {
+    console.log("Port: " + 8080, process.pid);
+  });
+}
+
+// app.listen(8080, () => {
+//   console.log("Port: " + 8080);
+// });
