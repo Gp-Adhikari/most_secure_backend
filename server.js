@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const helmet = require("helmet");
 const csrf = require("csurf");
+const cors = require("cors");
 
 //built in modules
 const cluster = require("cluster");
@@ -29,6 +30,8 @@ app.use(csrf({ cookie: true }));
 
 //using helmet for security
 app.use(helmet());
+
+app.use(cors());
 
 //prevent ddos and bruteforce
 app.use(
