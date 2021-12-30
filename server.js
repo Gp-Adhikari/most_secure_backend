@@ -18,20 +18,58 @@ require("dotenv").config();
 
 const app = express();
 
+app.use(
+  cors({
+    credentials: true,
+    origin: ["http://localhost:3000", "*"],
+    // exposedHeaders: ["set-cookie"],
+  })
+);
+
+app.use(function (req, res, next) {
+  res.header("Access-Control-Allow-Credentials", true);
+  res.header("Access-Control-Allow-Origin", req.headers.origin);
+  res.header(
+    "Access-Control-Allow-Methods",
+    "GET,PUT,POST,DELETE,UPDATE,OPTIONS"
+  );
+  res.header(
+    "Access-Control-Allow-Headers",
+    "X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept"
+  );
+  next();
+});
+
 //get json data
 app.use(bodyParser.json());
 // app.use(bodyParser.urlencoded({ extended: false }));
 
 //access cookie easy
-app.use(cookieParser());
+app.use(
+  cookieParser({
+    cookie: {
+      // sameSite: "none",
+      httpOnly: true,
+      // secure: true,
+    },
+  })
+);
 
 //csrf protection
-app.use(csrf({ cookie: true }));
+// app.use(csrf({ cookie: { sameSite: "strict" } }));
+app.use(
+  csrf({
+    cookie: {
+      // domain: "https://localhost:3000",
+      // sameSite: "none",
+      httpOnly: true,
+      // secure: true,
+    },
+  })
+);
 
 //using helmet for security
 app.use(helmet());
-
-app.use(cors());
 
 //prevent ddos and bruteforce
 app.use(
